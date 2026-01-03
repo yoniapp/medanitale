@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Session, User } from '@supabase/supabase-js';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useRouter, usePathname } from 'next/navigation';
 import { showLoading, dismissToast, showError } from '@/utils/toast';
 
 interface UserProfile {
@@ -26,8 +26,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
-  const location = useLocation();
+  const router = useRouter();
+  const pathname = usePathname();
 
   const fetchProfile = async (userId: string) => {
     const { data, error } = await supabase
@@ -57,10 +57,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setLoading(false);
 
         if (event === 'SIGNED_OUT') {
-          navigate('/login');
+          router.push('/login');
         } else if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
-          if (currentSession && (location.pathname === '/login' || location.pathname === '/')) {
-            navigate('/home');
+          if (currentSession && pathname === '/login') {
+            router.push('/home');
           }
         }
       }
@@ -78,17 +78,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
       setLoading(false);
 
-      if (!session && location.pathname !== '/login' && location.pathname !== '/') {
-        navigate('/login');
-      } else if (session && (location.pathname === '/login' || location.pathname === '/')) {
-        navigate('/home');
+      if (!session && pathname !== '/login' && pathname !== '/') {
+        router.push('/login');
+      } else if (session && pathname === '/login') {
+        router.push('/home');
       }
     });
 
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, [navigate, location.pathname]);
+  }, [router, pathname]);
 
   return (
     <AuthContext.Provider value={{ session, user, profile, loading }}>
@@ -107,17 +107,18 @@ export const useAuth = () => {
 
 export const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode; allowedRoles?: UserProfile['role'][] }) => {
   const { user, profile, loading } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!loading && !user) {
-      navigate('/login', { state: { from: location.pathname } });
+      // For simple migration, we just redirect to login without complex state
+      router.push('/login');
     } else if (!loading && user && profile && allowedRoles && !allowedRoles.includes(profile.role)) {
       showError("You don't have permission to access this page.");
-      navigate('/home'); // Redirect to home if not authorized
+      router.push('/home'); // Redirect to home if not authorized
     }
-  }, [user, profile, loading, navigate, location.pathname, allowedRoles]);
+  }, [user, profile, loading, router, pathname, allowedRoles]);
 
   if (loading || !user || !profile || (allowedRoles && !allowedRoles.includes(profile.role))) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
