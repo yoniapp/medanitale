@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Session, User } from '@supabase/supabase-js';
-import { useNavigate, useLocation } from 'react-router-dom'; // Import useLocation
+import { useNavigate, useLocation } from 'react-router-dom';
 import { showLoading, dismissToast, showError } from '@/utils/toast';
 
 interface AuthContextType {
@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const location = useLocation(); // Get current location
+  const location = useLocation();
 
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
@@ -31,8 +31,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (event === 'SIGNED_OUT') {
           navigate('/login');
         } else if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
-          if (currentSession && location.pathname === '/login') {
-            navigate('/home'); // Redirect to home if already logged in and on login page
+          // Redirect to home if already logged in and on login or landing page
+          if (currentSession && (location.pathname === '/login' || location.pathname === '/')) {
+            navigate('/home');
           }
         }
       }
@@ -45,15 +46,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // If no session and not on login or landing page, redirect to login
       if (!session && location.pathname !== '/login' && location.pathname !== '/') {
         navigate('/login');
-      } else if (session && location.pathname === '/login') {
-        navigate('/home'); // If session exists and on login page, redirect to home
+      } else if (session && (location.pathname === '/login' || location.pathname === '/')) { // If session exists and on login or landing page, redirect to home
+        navigate('/home');
       }
     });
 
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, [navigate, location.pathname]); // Add location.pathname to dependencies
+  }, [navigate, location.pathname]);
 
   return (
     <AuthContext.Provider value={{ session, user, loading }}>
@@ -73,7 +74,7 @@ export const useAuth = () => {
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation(); // Get current location
+  const location = useLocation();
 
   useEffect(() => {
     if (!loading && !user) {
