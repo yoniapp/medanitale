@@ -44,12 +44,22 @@ const LoginPage = () => {
     setLoading(true);
     const toastId = showLoading('Signing up...');
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: email,
         password: password,
       });
 
-      if (error) throw error;
+      if (signUpError) throw signUpError;
+
+      // If signup is successful, create a profile entry
+      if (signUpData.user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert([
+            { id: signUpData.user.id, email: signUpData.user.email, role: 'patient', is_blocked: false } // Default role
+          ]);
+        if (profileError) throw profileError;
+      }
 
       showSuccess('Sign up successful! Please check your email to confirm your account.');
       setEmail('');

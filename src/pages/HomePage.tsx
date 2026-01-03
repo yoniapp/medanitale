@@ -21,7 +21,7 @@ interface Prescription {
 }
 
 const HomePage = () => {
-  const { user, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth(); // Get profile
   const navigate = useNavigate();
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
   const [fetchingPrescriptions, setFetchingPrescriptions] = useState(true);
@@ -107,6 +107,10 @@ const HomePage = () => {
     navigate('/rider-dashboard');
   };
 
+  const handleGoToAdminDashboard = () => {
+    navigate('/admin-dashboard');
+  };
+
   const handleViewPrescriptionDetails = (id: string) => {
     navigate(`/prescription/${id}`);
   };
@@ -132,6 +136,11 @@ const HomePage = () => {
                 Phone: <span className="font-mono">{user.phone}</span>
               </p>
             )}
+            {profile && (
+              <p className="text-lg text-gray-700 dark:text-gray-200">
+                Role: <span className="font-mono">{profile.role}</span>
+              </p>
+            )}
           </div>
         )}
         <div className="flex flex-col space-y-4 mt-4">
@@ -141,6 +150,11 @@ const HomePage = () => {
           <Button onClick={handleGoToRiderDashboard} variant="secondary">
             Go to Rider Dashboard
           </Button>
+          {profile?.role === 'admin' && ( // Show Admin Dashboard button only for admins
+            <Button onClick={handleGoToAdminDashboard} variant="secondary">
+              Go to Admin Dashboard
+            </Button>
+          )}
           <Button onClick={handleLogout} variant="outline">
             Logout
           </Button>

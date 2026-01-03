@@ -8,6 +8,7 @@ import LoginPage from "./pages/LoginPage";
 import UploadPrescriptionPage from "./pages/UploadPrescriptionPage";
 import RiderDashboardPage from "./pages/RiderDashboardPage";
 import PrescriptionDetailsPage from "./pages/PrescriptionDetailsPage";
+import AdminDashboardPage from "./pages/AdminDashboardPage"; // Import AdminDashboardPage
 import { ProtectedRoute } from "./components/AuthProvider";
 import AppProviders from "./components/AppProviders"; // Import the new AppProviders component
 
@@ -45,6 +46,14 @@ const App = () => (
         element={
           <ProtectedRoute>
             <PrescriptionDetailsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin-dashboard"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}> {/* Protect with admin role */}
+            <AdminDashboardPage />
           </ProtectedRoute>
         }
       />
