@@ -3,9 +3,11 @@ import { useAuth } from "@/components/AuthProvider";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 import { showLoading, dismissToast, showError, showSuccess } from "@/utils/toast";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 const Index = () => {
   const { user, loading } = useAuth();
+  const navigate = useNavigate(); // Initialize useNavigate
 
   const handleLogout = async () => {
     const toastId = showLoading('Logging out...');
@@ -18,6 +20,10 @@ const Index = () => {
     } finally {
       dismissToast(toastId);
     }
+  };
+
+  const handleUploadPrescription = () => {
+    navigate('/upload-prescription');
   };
 
   if (loading) {
@@ -43,9 +49,14 @@ const Index = () => {
             )}
           </div>
         )}
-        <Button onClick={handleLogout} className="mt-4">
-          Logout
-        </Button>
+        <div className="flex flex-col space-y-4 mt-4">
+          <Button onClick={handleUploadPrescription}>
+            Upload New Prescription
+          </Button>
+          <Button onClick={handleLogout} variant="outline">
+            Logout
+          </Button>
+        </div>
       </div>
       <MadeWithDyad />
     </div>
