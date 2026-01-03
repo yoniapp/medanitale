@@ -8,6 +8,7 @@ import { showLoading, dismissToast, showError, showSuccess } from "@/utils/toast
 import { useNavigate } from "react-router-dom";
 import PrescriptionCard from "@/components/PrescriptionCard";
 import React, { useEffect, useState, useCallback } from "react";
+import { ImageUploadDemo } from "@/components/ImageUploadDemo"; // Import the new component
 
 // Define the type for a prescription
 interface Prescription {
@@ -50,7 +51,7 @@ const HomePage = () => {
       setPrescriptions([]);
     } finally {
       dismissToast(toastId);
-      setLoading(false); // Ensure loading is set to false even on error
+      setFetchingPrescriptions(false); // Ensure loading is set to false even on error
     }
   }, [user]);
 
@@ -143,6 +144,14 @@ const HomePage = () => {
           <Button onClick={handleLogout} variant="outline">
             Logout
           </Button>
+        </div>
+      </div>
+
+      {/* New Image Upload Demo Component */}
+      <div className="w-full max-w-4xl mb-8">
+        <h2 className="text-3xl font-bold mb-6 text-gray-900 dark:text-white text-center">Image Upload Demo</h2>
+        <div className="flex justify-center">
+          <ImageUploadDemo />
         </div>
       </div>
 
