@@ -1,3 +1,5 @@
+"use client";
+
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { useAuth } from "@/components/AuthProvider";
 import { Button } from "@/components/ui/button";
@@ -5,19 +7,19 @@ import { supabase } from "@/lib/supabase";
 import { showLoading, dismissToast, showError, showSuccess } from "@/utils/toast";
 import { useNavigate } from "react-router-dom";
 import PrescriptionCard from "@/components/PrescriptionCard";
-import React, { useEffect, useState, useCallback } from "react"; // Import useCallback
+import React, { useEffect, useState, useCallback } from "react";
 
 // Define the type for a prescription
 interface Prescription {
   id: string;
   image_url: string;
-  status: 'pending' | 'assigned' | 'picked_up' | 'delivered' | 'rejected' | 'awaiting_pharmacy_response' | 'pharmacy_confirmed'; // Updated status types
+  status: 'pending' | 'assigned' | 'picked_up' | 'delivered' | 'rejected' | 'awaiting_pharmacy_response' | 'pharmacy_confirmed';
   upload_date: string;
   notes?: string;
-  rider_id?: string; // Added rider_id
+  rider_id?: string;
 }
 
-const Index = () => {
+const HomePage = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
@@ -48,9 +50,9 @@ const Index = () => {
       setPrescriptions([]);
     } finally {
       dismissToast(toastId);
-      setFetchingPrescriptions(false);
+      setLoading(false); // Ensure loading is set to false even on error
     }
-  }, [user]); // Dependency on user
+  }, [user]);
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -62,29 +64,25 @@ const Index = () => {
         .on(
           'postgres_changes',
           {
-            event: '*', // Listen for all events (INSERT, UPDATE, DELETE)
+            event: '*',
             schema: 'public',
             table: 'prescriptions',
-            filter: `user_id=eq.${user.id}`, // Only listen for changes related to the current user
+            filter: `user_id=eq.${user.id}`,
           },
           (payload) => {
             console.log('Change received!', payload);
-            // Re-fetch prescriptions to ensure the list is up-to-date
-            // A more optimized approach would be to directly manipulate the state based on payload.new/payload.old
-            // but re-fetching is simpler and robust for now.
             fetchPrescriptions();
           }
         )
         .subscribe();
 
       return () => {
-        // Clean up the subscription when the component unmounts
         supabase.removeChannel(subscription);
       };
     } else if (!authLoading && !user) {
-      setFetchingPrescriptions(false); // No user, no prescriptions to fetch
+      setFetchingPrescriptions(false);
     }
-  }, [user, authLoading, fetchPrescriptions]); // Dependencies for useEffect
+  }, [user, authLoading, fetchPrescriptions]);
 
   const handleLogout = async () => {
     const toastId = showLoading('Logging out...');
@@ -92,6 +90,7 @@ const Index = () => {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       showSuccess('Logged out successfully!');
+      navigate('/login'); // Redirect to login after logout
     } catch (error: any) {
       showError(`Error logging out: ${error.message}`);
     } finally {
@@ -172,4 +171,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default HomePage;

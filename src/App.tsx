@@ -3,12 +3,13 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
+import LandingPage from "./pages/LandingPage"; // Import the new LandingPage
+import HomePage from "./pages/HomePage"; // Import the renamed HomePage
 import NotFound from "./pages/NotFound";
 import LoginPage from "./pages/LoginPage";
 import UploadPrescriptionPage from "./pages/UploadPrescriptionPage";
 import RiderDashboardPage from "./pages/RiderDashboardPage";
-import PrescriptionDetailsPage from "./pages/PrescriptionDetailsPage"; // Import the new page
+import PrescriptionDetailsPage from "./pages/PrescriptionDetailsPage";
 import { AuthProvider, ProtectedRoute } from "./components/AuthProvider";
 
 const queryClient = new QueryClient();
@@ -21,12 +22,13 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
+            <Route path="/" element={<LandingPage />} /> {/* Landing page for unauthenticated users */}
             <Route path="/login" element={<LoginPage />} />
             <Route
-              path="/"
+              path="/home" // Authenticated home page
               element={
                 <ProtectedRoute>
-                  <Index />
+                  <HomePage />
                 </ProtectedRoute>
               }
             />

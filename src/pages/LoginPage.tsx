@@ -6,14 +6,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { showLoading, dismissToast, showError, showSuccess } from '@/utils/toast';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom'; // Import useLocation
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false); // New state to toggle between login and sign-up
+  const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation(); // Get current location
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,7 +29,8 @@ const LoginPage = () => {
       if (error) throw error;
 
       showSuccess('Successfully logged in!');
-      navigate('/');
+      const from = location.state?.from || '/home'; // Redirect to /home or the previously attempted protected route
+      navigate(from);
     } catch (error: any) {
       showError(`Error logging in: ${error.message}`);
     } finally {
@@ -50,10 +52,11 @@ const LoginPage = () => {
       if (error) throw error;
 
       showSuccess('Sign up successful! Please check your email to confirm your account.');
-      // Optionally, you can redirect or clear the form here
       setEmail('');
       setPassword('');
       setIsSignUp(false); // Switch back to login after sign up
+      // No immediate redirect to /home after signup, as email confirmation is required.
+      // User will be redirected to /home by AuthProvider once session is established after confirmation.
     } catch (error: any) {
       showError(`Error signing up: ${error.message}`);
     } finally {
