@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Ban, CheckCircle2, Search, User } from 'lucide-react';
+import { useAuth } from '@/components/AuthProvider'; // Import useAuth to get current admin user
 
 interface UserProfile {
   id: string;
@@ -19,6 +20,7 @@ interface UserProfile {
 }
 
 const UserManagement: React.FC = () => {
+  const { user: adminUser } = useAuth(); // Get the currently logged-in admin user
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -58,16 +60,30 @@ const UserManagement: React.FC = () => {
     fetchUsers();
   }, [fetchUsers]);
 
-  const handleToggleBlockUser = async (userId: string, currentBlockedStatus: boolean) => {
+  const handleToggleBlockUser = async (targetUser: UserProfile, currentBlockedStatus: boolean) => {
     const action = currentBlockedStatus ? 'Unblocking' : 'Blocking';
+    const logAction = currentBlockedStatus ? 'USER_UNBLOCKED' : 'USER_BLOCKED';
     const toastId = showLoading(`${action} user...`);
     try {
       const { error } = await supabase
         .from('profiles')
         .update({ is_blocked: !currentBlockedStatus })
-        .eq('id', userId);
+        .eq('id', targetUser.id);
 
       if (error) throw error;
+
+      // Log the action
+      await supabase.from('logs').insert({
+        user_id: adminUser?.id,
+        action: logAction,
+        target_id: targetUser.id,
+        description: `${adminUser?.email || 'Admin'} ${action.toLowerCase()} user ${targetUser.email}.`,
+        metadata: {
+          target_user_email: targetUser.email,
+          previous_status: currentBlockedStatus,
+          new_status: !currentBlockedStatus,
+        },
+      });
 
       showSuccess(`User ${currentBlockedStatus ? 'unblocked' : 'blocked'} successfully!`);
       fetchUsers(); // Re-fetch users to update the list
@@ -150,7 +166,7 @@ const UserManagement: React.FC = () => {
                     <Button
                       variant={user.is_blocked ? 'outline' : 'destructive'}
                       size="sm"
-                      onClick={() => handleToggleBlockUser(user.id, user.is_blocked)}
+                      onClick={() => handleToggleBlockUser(user, user.is_blocked)}
                     >
                       {user.is_blocked ? 'Unblock' : 'Block'}
                     </Button>

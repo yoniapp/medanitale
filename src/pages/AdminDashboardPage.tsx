@@ -6,6 +6,7 @@ import DashboardOverview from '@/components/admin/DashboardOverview';
 import UserManagement from '@/components/admin/UserManagement';
 import PrescriptionManagement from '@/components/admin/PrescriptionManagement';
 import PharmacyManagement from '@/components/admin/PharmacyManagement';
+import AuditLogs from '@/components/admin/AuditLogs'; // Import AuditLogs
 import { useLocation, useNavigate } from 'react-router-dom';
 
 const AdminDashboardPage: React.FC = () => {
@@ -35,8 +36,8 @@ const AdminDashboardPage: React.FC = () => {
         return <PrescriptionManagement />;
       case 'pharmacies':
         return <PharmacyManagement />;
-      // case 'logs':
-      //   return <div>Audit & Logs Content (Future)</div>;
+      case 'logs': // Added AuditLogs
+        return <AuditLogs />;
       // case 'notifications':
       //   return <div>Notifications & Alerts Content (Future)</div>;
       // case 'analytics':

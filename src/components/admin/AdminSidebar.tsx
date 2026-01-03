@@ -17,7 +17,7 @@ const navItems = [
   { name: 'User Management', icon: Users, section: 'users' },
   { name: 'Prescription Management', icon: FileText, section: 'prescriptions' },
   { name: 'Pharmacy Management', icon: Hospital, section: 'pharmacies' },
-  // { name: 'Audit & Logs', icon: Log, section: 'logs' }, // Future
+  { name: 'Audit & Logs', icon: Log, section: 'logs' }, // Enabled
   // { name: 'Notifications', icon: BellRing, section: 'notifications' }, // Future
   // { name: 'Analytics', icon: BarChart3, section: 'analytics' }, // Future
 ];

@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, XCircle, Mail, Phone, MapPin } from 'lucide-react';
+import { useAuth } from '@/components/AuthProvider'; // Import useAuth to get current admin user
 
 interface Pharmacy {
   id: string;
@@ -19,6 +20,7 @@ interface Pharmacy {
 }
 
 const PharmacyManagement: React.FC = () => {
+  const { user: adminUser } = useAuth(); // Get the currently logged-in admin user
   const [pharmacies, setPharmacies] = useState<Pharmacy[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -38,7 +40,6 @@ const PharmacyManagement: React.FC = () => {
       setPharmacies([]);
     } finally {
       dismissToast(toastId);
-      setLoading(false);
     }
   }, []);
 
@@ -46,16 +47,30 @@ const PharmacyManagement: React.FC = () => {
     fetchPharmacies();
   }, [fetchPharmacies]);
 
-  const handleToggleVerification = async (pharmacyId: string, currentVerifiedStatus: boolean) => {
+  const handleToggleVerification = async (pharmacy: Pharmacy, currentVerifiedStatus: boolean) => {
     const action = currentVerifiedStatus ? 'Unverifying' : 'Verifying';
+    const logAction = currentVerifiedStatus ? 'PHARMACY_UNVERIFIED' : 'PHARMACY_VERIFIED';
     const toastId = showLoading(`${action} pharmacy...`);
     try {
       const { error } = await supabase
         .from('pharmacies')
         .update({ is_verified: !currentVerifiedStatus })
-        .eq('id', pharmacyId);
+        .eq('id', pharmacy.id);
 
       if (error) throw error;
+
+      // Log the action
+      await supabase.from('logs').insert({
+        user_id: adminUser?.id,
+        action: logAction,
+        target_id: pharmacy.id,
+        description: `${adminUser?.email || 'Admin'} ${action.toLowerCase()} pharmacy ${pharmacy.name}.`,
+        metadata: {
+          pharmacy_name: pharmacy.name,
+          previous_status: currentVerifiedStatus,
+          new_status: !currentVerifiedStatus,
+        },
+      });
 
       showSuccess(`Pharmacy ${currentVerifiedStatus ? 'unverified' : 'verified'} successfully!`);
       fetchPharmacies(); // Re-fetch pharmacies to update the list
@@ -132,7 +147,7 @@ const PharmacyManagement: React.FC = () => {
                     <Button
                       variant={pharmacy.is_verified ? 'outline' : 'default'}
                       size="sm"
-                      onClick={() => handleToggleVerification(pharmacy.id, pharmacy.is_verified)}
+                      onClick={() => handleToggleVerification(pharmacy, pharmacy.is_verified)}
                     >
                       {pharmacy.is_verified ? 'Unverify' : 'Verify'}
                     </Button>
