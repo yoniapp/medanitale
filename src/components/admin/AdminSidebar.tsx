@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { LayoutDashboard, Users, FileText, Hospital, Log, BellRing, BarChart3, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -35,7 +35,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeSection, onSectionCha
         <SheetContent side="left" className="w-64 p-0">
           <div className="flex h-full max-h-screen flex-col gap-2 bg-sidebar text-sidebar-foreground">
             <div className="flex h-14 items-center border-b border-sidebar-border px-4 lg:h-[60px] lg:px-6">
-              <Link to="/admin-dashboard" className="flex items-center gap-2 font-semibold">
+              <Link href="/admin-dashboard" className="flex items-center gap-2 font-semibold">
                 <LayoutDashboard className="h-6 w-6" />
                 <span className="">Admin Panel</span>
               </Link>
@@ -65,7 +65,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeSection, onSectionCha
       {/* Desktop Sidebar */}
       <div className="hidden lg:flex h-screen w-64 flex-col border-r bg-sidebar text-sidebar-foreground">
         <div className="flex h-14 items-center border-b border-sidebar-border px-4 lg:h-[60px] lg:px-6">
-          <Link to="/admin-dashboard" className="flex items-center gap-2 font-semibold">
+          <Link href="/admin-dashboard" className="flex items-center gap-2 font-semibold">
             <LayoutDashboard className="h-6 w-6" />
             <span className="">Admin Panel</span>
           </Link>
