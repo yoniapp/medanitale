@@ -65,14 +65,14 @@ export const usePrescriptionUpload = () => {
           {
             user_id: user.id,
             image_url: publicUrlData.publicUrl,
-            status: 'pending', // Default status
+            status: 'awaiting_pharmacy_response', // New initial status
             upload_date: new Date().toISOString(),
           },
         ]);
 
       if (insertError) throw insertError;
 
-      showSuccess('Prescription uploaded successfully! We will find a rider for you.');
+      showSuccess('Prescription uploaded successfully! We are now checking with nearby pharmacies.');
       navigate('/'); // Navigate back to home after successful upload
     } catch (error: any) {
       showError(`Error uploading prescription: ${error.message}`);

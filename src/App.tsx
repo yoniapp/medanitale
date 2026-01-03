@@ -7,7 +7,8 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import LoginPage from "./pages/LoginPage";
 import UploadPrescriptionPage from "./pages/UploadPrescriptionPage";
-import RiderDashboardPage from "./pages/RiderDashboardPage"; // Import the new page
+import RiderDashboardPage from "./pages/RiderDashboardPage";
+import PrescriptionDetailsPage from "./pages/PrescriptionDetailsPage"; // Import the new page
 import { AuthProvider, ProtectedRoute } from "./components/AuthProvider";
 
 const queryClient = new QueryClient();
@@ -42,6 +43,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <RiderDashboardPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/prescription/:id"
+              element={
+                <ProtectedRoute>
+                  <PrescriptionDetailsPage />
                 </ProtectedRoute>
               }
             />

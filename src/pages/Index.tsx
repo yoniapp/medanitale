@@ -11,7 +11,7 @@ import React, { useEffect, useState, useCallback } from "react"; // Import useCa
 interface Prescription {
   id: string;
   image_url: string;
-  status: 'pending' | 'assigned' | 'picked_up' | 'delivered' | 'rejected'; // Updated status types
+  status: 'pending' | 'assigned' | 'picked_up' | 'delivered' | 'rejected' | 'awaiting_pharmacy_response' | 'pharmacy_confirmed'; // Updated status types
   upload_date: string;
   notes?: string;
   rider_id?: string; // Added rider_id
@@ -107,6 +107,10 @@ const Index = () => {
     navigate('/rider-dashboard');
   };
 
+  const handleViewPrescriptionDetails = (id: string) => {
+    navigate(`/prescription/${id}`);
+  };
+
   if (authLoading || fetchingPrescriptions) {
     return <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">Loading data...</div>;
   }
@@ -155,6 +159,7 @@ const Index = () => {
                 status={prescription.status}
                 uploadDate={prescription.upload_date}
                 notes={prescription.notes}
+                onViewDetails={handleViewPrescriptionDetails}
               />
             ))}
           </div>

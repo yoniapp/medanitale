@@ -3,37 +3,45 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Image as ImageIcon, CalendarDays, CheckCircle2, XCircle, Truck, Package } from 'lucide-react'; // Added Truck and Package icons
+import { Button } from '@/components/ui/button'; // Import Button
+import { Image as ImageIcon, CalendarDays, CheckCircle2, XCircle, Truck, Package, Search } from 'lucide-react'; // Added Search icon
 
 interface PrescriptionCardProps {
   id: string;
   imageUrl: string;
-  status: 'pending' | 'assigned' | 'picked_up' | 'delivered' | 'rejected'; // Updated status types
+  status: 'pending' | 'assigned' | 'picked_up' | 'delivered' | 'rejected' | 'awaiting_pharmacy_response' | 'pharmacy_confirmed'; // Updated status types
   uploadDate: string;
   notes?: string;
+  onViewDetails: (id: string) => void; // New prop for viewing details
 }
 
 const statusColors = {
   pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-  assigned: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200', // New status color
-  picked_up: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200', // New status color
+  assigned: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200',
+  picked_up: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
   delivered: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
   rejected: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+  awaiting_pharmacy_response: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200', // New status color
+  pharmacy_confirmed: 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200', // New status color
 };
 
 const statusIcons = {
   pending: <CalendarDays className="h-4 w-4 mr-1" />,
-  assigned: <Truck className="h-4 w-4 mr-1" />, // Icon for assigned
-  picked_up: <Package className="h-4 w-4 mr-1" />, // Icon for picked up
+  assigned: <Truck className="h-4 w-4 mr-1" />,
+  picked_up: <Package className="h-4 w-4 mr-1" />,
   delivered: <CheckCircle2 className="h-4 w-4 mr-1" />,
   rejected: <XCircle className="h-4 w-4 mr-1" />,
+  awaiting_pharmacy_response: <Search className="h-4 w-4 mr-1" />, // Icon for awaiting response
+  pharmacy_confirmed: <CheckCircle2 className="h-4 w-4 mr-1" />, // Icon for pharmacy confirmed
 };
 
 const PrescriptionCard: React.FC<PrescriptionCardProps> = ({
+  id,
   imageUrl,
   status,
   uploadDate,
   notes,
+  onViewDetails,
 }) => {
   return (
     <Card className="w-full max-w-sm overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
@@ -63,6 +71,9 @@ const PrescriptionCard: React.FC<PrescriptionCardProps> = ({
             <span className="font-medium">Notes:</span> {notes}
           </p>
         )}
+        <Button onClick={() => onViewDetails(id)} className="w-full mt-4">
+          View Details
+        </Button>
       </CardContent>
     </Card>
   );
