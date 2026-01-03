@@ -1,51 +1,16 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { showLoading, dismissToast, showError, showSuccess } from '@/utils/toast';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import { usePrescriptionUpload } from '@/hooks/use-prescription-upload'; // Import the new hook
 
 const UploadPrescriptionPage = () => {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files.length > 0) {
-      setSelectedFile(event.target.files[0]);
-    } else {
-      setSelectedFile(null);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedFile) {
-      showError('Please select a prescription image to upload.');
-      return;
-    }
-
-    setLoading(true);
-    const toastId = showLoading('Uploading prescription...');
-
-    try {
-      // In a real application, you would upload the file to Supabase Storage here
-      // and then create a record in your database.
-      // For now, we'll simulate a successful upload.
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call
-
-      showSuccess('Prescription uploaded successfully! We will find a rider for you.');
-      navigate('/'); // Navigate back to home after "upload"
-    } catch (error: any) {
-      showError(`Error uploading prescription: ${error.message}`);
-    } finally {
-      dismissToast(toastId);
-      setLoading(false);
-    }
-  };
+  const { selectedFile, loading, handleFileChange, handleSubmit } = usePrescriptionUpload(); // Use the hook
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 p-4">
