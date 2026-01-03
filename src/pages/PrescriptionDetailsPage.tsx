@@ -8,7 +8,7 @@ import { showLoading, dismissToast, showError } from '@/utils/toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Image as ImageIcon, CalendarDays, CheckCircle2, XCircle, Truck, Package, Search, MapPin, DollarSign } from 'lucide-react';
+import { ArrowLeft, Image as ImageIcon, CalendarDays, CheckCircle2, XCircle, Truck, Package, Search, MapPin, DollarSign, Hospital } from 'lucide-react'; // Changed Pharmacy to Hospital
 
 // Define types for Prescription, Pharmacy, and Response
 interface Prescription {

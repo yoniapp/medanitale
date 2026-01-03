@@ -3,16 +3,16 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button'; // Import Button
-import { Image as ImageIcon, CalendarDays, CheckCircle2, XCircle, Truck, Package, Search } from 'lucide-react'; // Added Search icon
+import { Button } from '@/components/ui/button';
+import { Image as ImageIcon, CalendarDays, CheckCircle2, XCircle, Truck, Package, Search, Hospital } from 'lucide-react'; // Changed Pharmacy to Hospital
 
 interface PrescriptionCardProps {
   id: string;
   imageUrl: string;
-  status: 'pending' | 'assigned' | 'picked_up' | 'delivered' | 'rejected' | 'awaiting_pharmacy_response' | 'pharmacy_confirmed'; // Updated status types
+  status: 'pending' | 'assigned' | 'picked_up' | 'delivered' | 'rejected' | 'awaiting_pharmacy_response' | 'pharmacy_confirmed';
   uploadDate: string;
   notes?: string;
-  onViewDetails: (id: string) => void; // New prop for viewing details
+  onViewDetails: (id: string) => void;
 }
 
 const statusColors = {
@@ -21,8 +21,8 @@ const statusColors = {
   picked_up: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
   delivered: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
   rejected: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-  awaiting_pharmacy_response: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200', // New status color
-  pharmacy_confirmed: 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200', // New status color
+  awaiting_pharmacy_response: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+  pharmacy_confirmed: 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200',
 };
 
 const statusIcons = {
@@ -31,8 +31,8 @@ const statusIcons = {
   picked_up: <Package className="h-4 w-4 mr-1" />,
   delivered: <CheckCircle2 className="h-4 w-4 mr-1" />,
   rejected: <XCircle className="h-4 w-4 mr-1" />,
-  awaiting_pharmacy_response: <Search className="h-4 w-4 mr-1" />, // Icon for awaiting response
-  pharmacy_confirmed: <CheckCircle2 className="h-4 w-4 mr-1" />, // Icon for pharmacy confirmed
+  awaiting_pharmacy_response: <Search className="h-4 w-4 mr-1" />,
+  pharmacy_confirmed: <CheckCircle2 className="h-4 w-4 mr-1" />,
 };
 
 const PrescriptionCard: React.FC<PrescriptionCardProps> = ({

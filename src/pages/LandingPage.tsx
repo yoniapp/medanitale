@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { HeroGeometric } from '@/components/ui/shape-landing-hero';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle2, Users, Pharmacy, UploadCloud, Truck, DollarSign } from 'lucide-react';
+import { CheckCircle2, Users, Hospital, UploadCloud, Truck, DollarSign } from 'lucide-react'; // Changed Pharmacy to Hospital
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -43,7 +43,7 @@ const LandingPage = () => {
           </Card>
           <Card className="text-center p-6 shadow-lg">
             <CardHeader>
-              <Pharmacy className="h-12 w-12 text-primary mx-auto mb-4" />
+              <Hospital className="h-12 w-12 text-primary mx-auto mb-4" /> {/* Changed Pharmacy to Hospital */}
               <CardTitle className="text-xl font-semibold mb-2">Step 2: Pharmacies Confirm Availability</CardTitle>
             </CardHeader>
             <CardContent>
@@ -106,7 +106,7 @@ const LandingPage = () => {
             <CardContent className="p-0 pt-2 text-muted-foreground">Ensure patients get prescriptions fulfilled.</CardContent>
           </Card>
           <Card className="p-6 text-center shadow-md">
-            <Pharmacy className="h-10 w-10 text-orange-500 mx-auto mb-4" />
+            <Hospital className="h-10 w-10 text-orange-500 mx-auto mb-4" /> {/* Changed Pharmacy to Hospital */}
             <CardTitle className="text-lg font-semibold">Pharmacies</CardTitle>
             <CardContent className="p-0 pt-2 text-muted-foreground">Reach real patients with available stock.</CardContent>
           </Card>
