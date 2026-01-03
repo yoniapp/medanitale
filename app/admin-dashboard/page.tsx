@@ -7,17 +7,11 @@ import UserManagement from '@/components/admin/UserManagement';
 import PrescriptionManagement from '@/components/admin/PrescriptionManagement';
 import PharmacyManagement from '@/components/admin/PharmacyManagement';
 import AuditLogs from '@/components/admin/AuditLogs';
-import { useRouter, useSearchParams } from 'next/navigation';
 import { ProtectedRoute } from '@/components/AuthProvider';
+import { useAdminDashboardLogic } from '@/hooks/use-admin-dashboard-logic';
 
 function AdminDashboardContent() {
-    const router = useRouter();
-    const searchParams = useSearchParams();
-    const activeSection = searchParams.get('section') || 'overview';
-
-    const handleSectionChange = (section: string) => {
-        router.push(`/admin-dashboard?section=${section}`);
-    };
+    const { activeSection, handleSectionChange } = useAdminDashboardLogic();
 
     const renderContent = () => {
         switch (activeSection) {

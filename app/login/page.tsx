@@ -1,135 +1,86 @@
 "use client";
 
-import React, { useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import React, { Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { showLoading, dismissToast, showError, showSuccess } from '@/utils/toast';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useLoginLogic } from '@/hooks/use-login-logic';
 
-export default function LoginPage() {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [isSignUp, setIsSignUp] = useState(false);
-    const router = useRouter();
-    const searchParams = useSearchParams();
-
-    const handleLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-        const toastId = showLoading('Logging in...');
-        try {
-            const { error } = await supabase.auth.signInWithPassword({
-                email: email,
-                password: password,
-            });
-
-            if (error) throw error;
-
-            showSuccess('Successfully logged in!');
-            const from = searchParams.get('from') || '/home';
-            router.push(from);
-        } catch (error: any) {
-            showError(`Error logging in: ${error.message}`);
-        } finally {
-            dismissToast(toastId);
-            setLoading(false);
-        }
-    };
-
-    const handleSignUp = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-        const toastId = showLoading('Signing up...');
-        try {
-            const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-                email: email,
-                password: password,
-            });
-
-            if (signUpError) throw signUpError;
-
-            if (signUpData.user) {
-                const { error: profileError } = await supabase
-                    .from('profiles')
-                    .insert([
-                        { id: signUpData.user.id, email: signUpData.user.email, role: 'patient', is_blocked: false }
-                    ]);
-                if (profileError) throw profileError;
-            }
-
-            showSuccess('Sign up successful! Please check your email to confirm your account.');
-            setEmail('');
-            setPassword('');
-            setIsSignUp(false);
-        } catch (error: any) {
-            showError(`Error signing up: ${error.message}`);
-        } finally {
-            dismissToast(toastId);
-            setLoading(false);
-        }
-    };
+function LoginContent() {
+    const {
+        email,
+        setEmail,
+        password,
+        setPassword,
+        loading,
+        isSignUp,
+        setIsSignUp,
+        handleLogin,
+        handleSignUp,
+    } = useLoginLogic();
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
-            <Card className="w-full max-w-md p-6">
-                <CardHeader className="text-center">
-                    <CardTitle className="text-2xl font-bold">Medanit Ale</CardTitle>
-                    <CardDescription>
-                        {isSignUp ? 'Create your account' : 'Enter your email and password to log in'}
+        <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
+            <Card className="w-full max-w-md">
+                <CardHeader>
+                    <CardTitle className="text-2xl font-bold text-center">
+                        {isSignUp ? 'Create an Account' : 'Welcome Back'}
+                    </CardTitle>
+                    <CardDescription className="text-center">
+                        {isSignUp
+                            ? 'Enter your details to register as a Patient.'
+                            : 'Enter your credentials to access your account.'}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={isSignUp ? handleSignUp : handleLogin} className="space-y-4">
-                        <div>
-                            <label htmlFor="email" className="sr-only">Email</label>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium leading-none" htmlFor="email">
+                                Email
+                            </label>
                             <Input
                                 id="email"
                                 type="email"
-                                placeholder="Email"
+                                placeholder="m@example.com"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
-                                className="w-full"
                             />
                         </div>
-                        <div>
-                            <label htmlFor="password" className="sr-only">Password</label>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium leading-none" htmlFor="password">
+                                Password
+                            </label>
                             <Input
                                 id="password"
                                 type="password"
-                                placeholder="Password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
-                                className="w-full"
                             />
                         </div>
-                        <Button type="submit" className="w-full" disabled={loading}>
-                            {loading ? (isSignUp ? 'Signing up...' : 'Logging in...') : (isSignUp ? 'Sign Up' : 'Login')}
+                        <Button className="w-full" type="submit" disabled={loading}>
+                            {loading ? (isSignUp ? 'Creating Account...' : 'Logging in...') : (isSignUp ? 'Sign Up' : 'Login')}
                         </Button>
                     </form>
-                    <div className="mt-4 text-center text-sm">
-                        {isSignUp ? (
-                            <>
-                                Already have an account?{' '}
-                                <Button variant="link" onClick={() => setIsSignUp(false)} className="p-0 h-auto">
-                                    Login
-                                </Button>
-                            </>
-                        ) : (
-                            <>
-                                Don't have an account?{' '}
-                                <Button variant="link" onClick={() => setIsSignUp(true)} className="p-0 h-auto">
-                                    Sign Up
-                                </Button>
-                            </>
-                        )}
+                    <div className="mt-4 text-center">
+                        <button
+                            className="text-sm text-primary hover:underline hover:cursor-pointer"
+                            onClick={() => setIsSignUp(!isSignUp)}
+                        >
+                            {isSignUp ? 'Already have an account? Login' : "Don't have an account? Sign Up"}
+                        </button>
                     </div>
                 </CardContent>
             </Card>
         </div>
+    );
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={<div>Loading login...</div>}>
+            <LoginContent />
+        </Suspense>
     );
 }
