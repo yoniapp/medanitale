@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { showLoading, dismissToast, showError, showSuccess } from "@/utils/toast";
 import { useNavigate } from "react-router-dom";
 import PrescriptionCard from "@/components/PrescriptionCard";
-import React, { useEffect, useState } from "react"; // Import useEffect and useState
+import React, { useEffect, useState, useCallback } from "react"; // Import useCallback
 
 // Define the type for a prescription
 interface Prescription {
@@ -22,41 +22,68 @@ const Index = () => {
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
   const [fetchingPrescriptions, setFetchingPrescriptions] = useState(true);
 
+  // Function to fetch prescriptions, memoized with useCallback
+  const fetchPrescriptions = useCallback(async () => {
+    if (!user) {
+      setFetchingPrescriptions(false);
+      return;
+    }
+
+    setFetchingPrescriptions(true);
+    const toastId = showLoading('Fetching your prescriptions...');
+    try {
+      const { data, error } = await supabase
+        .from('prescriptions')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('upload_date', { ascending: false });
+
+      if (error) throw error;
+
+      setPrescriptions(data as Prescription[]);
+      showSuccess('Prescriptions loaded!');
+    } catch (error: any) {
+      showError(`Error fetching prescriptions: ${error.message}`);
+      setPrescriptions([]);
+    } finally {
+      dismissToast(toastId);
+      setFetchingPrescriptions(false);
+    }
+  }, [user]); // Dependency on user
+
   useEffect(() => {
-    const fetchPrescriptions = async () => {
-      if (!user) {
-        setFetchingPrescriptions(false);
-        return;
-      }
-
-      setFetchingPrescriptions(true);
-      const toastId = showLoading('Fetching your prescriptions...');
-      try {
-        const { data, error } = await supabase
-          .from('prescriptions')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('upload_date', { ascending: false });
-
-        if (error) throw error;
-
-        setPrescriptions(data as Prescription[]);
-        showSuccess('Prescriptions loaded!');
-      } catch (error: any) {
-        showError(`Error fetching prescriptions: ${error.message}`);
-        setPrescriptions([]);
-      } finally {
-        dismissToast(toastId);
-        setFetchingPrescriptions(false);
-      }
-    };
-
     if (!authLoading && user) {
       fetchPrescriptions();
+
+      // Set up real-time subscription
+      const subscription = supabase
+        .channel('prescriptions_channel')
+        .on(
+          'postgres_changes',
+          {
+            event: '*', // Listen for all events (INSERT, UPDATE, DELETE)
+            schema: 'public',
+            table: 'prescriptions',
+            filter: `user_id=eq.${user.id}`, // Only listen for changes related to the current user
+          },
+          (payload) => {
+            console.log('Change received!', payload);
+            // Re-fetch prescriptions to ensure the list is up-to-date
+            // A more optimized approach would be to directly manipulate the state based on payload.new/payload.old
+            // but re-fetching is simpler and robust for now.
+            fetchPrescriptions();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        // Clean up the subscription when the component unmounts
+        supabase.removeChannel(subscription);
+      };
     } else if (!authLoading && !user) {
       setFetchingPrescriptions(false); // No user, no prescriptions to fetch
     }
-  }, [user, authLoading]); // Re-run when user or authLoading changes
+  }, [user, authLoading, fetchPrescriptions]); // Dependencies for useEffect
 
   const handleLogout = async () => {
     const toastId = showLoading('Logging out...');
