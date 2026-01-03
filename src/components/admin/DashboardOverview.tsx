@@ -6,10 +6,10 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import { showLoading, dismissToast, showError } from '@/utils/toast';
 import { FileText, CheckCircle2, Users, Hospital } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 
 const DashboardOverview: React.FC = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const [metrics, setMetrics] = useState({
     totalPrescriptions: 0,
     pendingPrescriptions: 0,
@@ -24,33 +24,28 @@ const DashboardOverview: React.FC = () => {
       setLoading(true);
       const toastId = showLoading('Fetching dashboard metrics...');
       try {
-        // Total Prescriptions
         const { count: totalPrescriptionsCount, error: totalError } = await supabase
           .from('prescriptions')
           .select('*', { count: 'exact', head: true });
         if (totalError) throw totalError;
 
-        // Pending Prescriptions
         const { count: pendingPrescriptionsCount, error: pendingError } = await supabase
           .from('prescriptions')
           .select('*', { count: 'exact', head: true })
           .eq('status', 'awaiting_pharmacy_response');
         if (pendingError) throw pendingError;
 
-        // Confirmed Prescriptions (pharmacy_confirmed)
         const { count: confirmedPrescriptionsCount, error: confirmedError } = await supabase
           .from('prescriptions')
           .select('*', { count: 'exact', head: true })
           .eq('status', 'pharmacy_confirmed');
         if (confirmedError) throw confirmedError;
 
-        // Registered Pharmacies
         const { count: pharmaciesCount, error: pharmaciesError } = await supabase
           .from('pharmacies')
           .select('*', { count: 'exact', head: true });
         if (pharmaciesError) throw pharmaciesError;
 
-        // Active Users (simple count of profiles for now)
         const { count: activeUsersCount, error: usersError } = await supabase
           .from('profiles')
           .select('*', { count: 'exact', head: true });
@@ -141,16 +136,16 @@ const DashboardOverview: React.FC = () => {
           <CardDescription>Perform common administrative tasks.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <Button variant="outline" onClick={() => navigate('/admin-dashboard?section=prescriptions&filter=pending')}>
+          <Button variant="outline" onClick={() => router.push('/admin-dashboard?section=prescriptions&filter=pending')}>
             View Pending Prescriptions
           </Button>
-          <Button variant="outline" onClick={() => navigate('/admin-dashboard?section=prescriptions&filter=pharmacy_confirmed')}>
+          <Button variant="outline" onClick={() => router.push('/admin-dashboard?section=prescriptions&filter=pharmacy_confirmed')}>
             View Confirmed Prescriptions
           </Button>
-          <Button variant="outline" onClick={() => navigate('/admin-dashboard?section=users')}>
+          <Button variant="outline" onClick={() => router.push('/admin-dashboard?section=users')}>
             Manage Users
           </Button>
-          <Button variant="outline" onClick={() => navigate('/admin-dashboard?section=pharmacies')}>
+          <Button variant="outline" onClick={() => router.push('/admin-dashboard?section=pharmacies')}>
             Manage Pharmacies
           </Button>
         </CardContent>

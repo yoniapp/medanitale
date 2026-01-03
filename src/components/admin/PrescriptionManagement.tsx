@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Image as ImageIcon, CalendarDays, CheckCircle2, XCircle, Truck, Package, Search, Eye } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 
 interface Prescription {
   id: string;
@@ -20,7 +20,7 @@ interface Prescription {
   rider_id?: string;
 }
 
-const statusColors = {
+const statusColors: Record<string, string> = {
   pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
   assigned: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200',
   picked_up: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
@@ -30,7 +30,7 @@ const statusColors = {
   pharmacy_confirmed: 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200',
 };
 
-const statusIcons = {
+const statusIcons: Record<string, React.ReactNode> = {
   pending: <CalendarDays className="h-3 w-3 mr-1" />,
   assigned: <Truck className="h-3 w-3 mr-1" />,
   picked_up: <Package className="h-3 w-3 mr-1" />,
@@ -41,7 +41,7 @@ const statusIcons = {
 };
 
 const PrescriptionManagement: React.FC = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -77,7 +77,7 @@ const PrescriptionManagement: React.FC = () => {
   }, [fetchPrescriptions]);
 
   const handleViewDetails = (id: string) => {
-    navigate(`/prescription/${id}`);
+    router.push(`/prescription/${id}`);
   };
 
   return (
