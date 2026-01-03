@@ -11,6 +11,7 @@ import UploadPrescriptionPage from "./pages/UploadPrescriptionPage";
 import RiderDashboardPage from "./pages/RiderDashboardPage";
 import PrescriptionDetailsPage from "./pages/PrescriptionDetailsPage";
 import { AuthProvider, ProtectedRoute } from "./components/AuthProvider";
+import Footer from "./components/ui/animated-footer"; // Import the new Footer component
 
 const queryClient = new QueryClient();
 
@@ -61,6 +62,22 @@ const App = () => (
           </Routes>
         </AuthProvider>
       </BrowserRouter>
+      <Footer
+        leftLinks={[
+          { href: "/terms", label: "Terms & policies" },
+          { href: "/privacy-policy", label: "Privacy policy" },
+        ]}
+        rightLinks={[
+          { href: "/careers", label: "Careers" },
+          { href: "/about", label: "About" },
+          { href: "/help-center", label: "Help Center" },
+          { href: "https://x.com/taher_max_", label: "Twitter" },
+          { href: "https://www.instagram.com/taher_max_", label: "Instagram" },
+          { href: "https://github.com/tahermaxse", label: "GitHub" },
+        ]}
+        copyrightText="Medanit Ale 2025. All Rights Reserved"
+        barCount={23}
+      />
     </TooltipProvider>
   </QueryClientProvider>
 );
