@@ -1,39 +1,31 @@
 "use client";
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { MadeWithDyad } from '@/components/made-with-dyad';
+import { HeroGeometric } from '@/components/ui/shape-landing-hero'; // Import the new HeroGeometric component
 
 const LandingPage = () => {
   const navigate = useNavigate();
 
+  // The HeroGeometric component will take up the full screen and handle its own content.
+  // If you need buttons or other interactive elements on top of it, you would layer them.
+  // For now, we'll just render the HeroGeometric.
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900 p-4 text-center">
-      <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-2xl w-full">
-        <h1 className="text-5xl font-extrabold text-gray-900 dark:text-white mb-6">
-          Welcome to Medanit Ale!
-        </h1>
-        <p className="text-xl text-gray-700 dark:text-gray-300 mb-8">
-          Your trusted platform for managing and delivering prescriptions.
-        </p>
-        <div className="flex flex-col sm:flex-row justify-center gap-4">
-          <Button
-            onClick={() => navigate('/login')}
-            className="px-8 py-3 text-lg"
-          >
-            Get Started
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => navigate('/login')} // Can be changed to a "Learn More" page if needed
-            className="px-8 py-3 text-lg"
-          >
-            Learn More
-          </Button>
-        </div>
+    <div className="relative min-h-screen w-full">
+      <HeroGeometric
+        badge="Medanit Ale"
+        title1="Your Health, Delivered"
+        title2="Seamless Prescription Management"
+      />
+      {/* You can add overlay content here if needed, e.g., a "Get Started" button */}
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20">
+        <button
+          onClick={() => navigate('/login')}
+          className="px-8 py-3 text-lg bg-white text-gray-900 rounded-full shadow-lg hover:bg-gray-100 transition-colors"
+        >
+          Get Started
+        </button>
       </div>
-      <MadeWithDyad />
     </div>
   );
 };
