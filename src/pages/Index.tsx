@@ -4,43 +4,59 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 import { showLoading, dismissToast, showError, showSuccess } from "@/utils/toast";
 import { useNavigate } from "react-router-dom";
-import PrescriptionCard from "@/components/PrescriptionCard"; // Import the new component
+import PrescriptionCard from "@/components/PrescriptionCard";
+import React, { useEffect, useState } from "react"; // Import useEffect and useState
+
+// Define the type for a prescription
+interface Prescription {
+  id: string;
+  image_url: string;
+  status: 'pending' | 'processing' | 'delivered' | 'rejected';
+  upload_date: string;
+  notes?: string;
+}
 
 const Index = () => {
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
+  const [fetchingPrescriptions, setFetchingPrescriptions] = useState(true);
 
-  // Dummy prescription data for demonstration
-  const dummyPrescriptions = [
-    {
-      id: '1',
-      imageUrl: 'https://via.placeholder.com/150/FF0000/FFFFFF?text=Rx1', // Placeholder image
-      status: 'delivered' as const,
-      uploadDate: '2023-10-26T10:00:00Z',
-      notes: 'Delivered to main address.',
-    },
-    {
-      id: '2',
-      imageUrl: 'https://via.placeholder.com/150/0000FF/FFFFFF?text=Rx2', // Placeholder image
-      status: 'processing' as const,
-      uploadDate: '2023-11-15T14:30:00Z',
-      notes: 'Awaiting rider assignment.',
-    },
-    {
-      id: '3',
-      imageUrl: 'https://via.placeholder.com/150/008000/FFFFFF?text=Rx3', // Placeholder image
-      status: 'pending' as const,
-      uploadDate: '2023-12-01T09:15:00Z',
-      notes: 'New upload, waiting for review.',
-    },
-    {
-      id: '4',
-      imageUrl: 'https://via.placeholder.com/150/FFFF00/000000?text=Rx4', // Placeholder image
-      status: 'rejected' as const,
-      uploadDate: '2023-09-01T11:00:00Z',
-      notes: 'Image unclear, please re-upload.',
-    },
-  ];
+  useEffect(() => {
+    const fetchPrescriptions = async () => {
+      if (!user) {
+        setFetchingPrescriptions(false);
+        return;
+      }
+
+      setFetchingPrescriptions(true);
+      const toastId = showLoading('Fetching your prescriptions...');
+      try {
+        const { data, error } = await supabase
+          .from('prescriptions')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('upload_date', { ascending: false });
+
+        if (error) throw error;
+
+        setPrescriptions(data as Prescription[]);
+        showSuccess('Prescriptions loaded!');
+      } catch (error: any) {
+        showError(`Error fetching prescriptions: ${error.message}`);
+        setPrescriptions([]);
+      } finally {
+        dismissToast(toastId);
+        setFetchingPrescriptions(false);
+      }
+    };
+
+    if (!authLoading && user) {
+      fetchPrescriptions();
+    } else if (!authLoading && !user) {
+      setFetchingPrescriptions(false); // No user, no prescriptions to fetch
+    }
+  }, [user, authLoading]); // Re-run when user or authLoading changes
 
   const handleLogout = async () => {
     const toastId = showLoading('Logging out...');
@@ -59,8 +75,8 @@ const Index = () => {
     navigate('/upload-prescription');
   };
 
-  if (loading) {
-    return <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">Loading user data...</div>;
+  if (authLoading || fetchingPrescriptions) {
+    return <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">Loading data...</div>;
   }
 
   return (
@@ -94,10 +110,17 @@ const Index = () => {
 
       <div className="w-full max-w-4xl">
         <h2 className="text-3xl font-bold mb-6 text-gray-900 dark:text-white text-center">Your Prescriptions</h2>
-        {dummyPrescriptions.length > 0 ? (
+        {prescriptions.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
-            {dummyPrescriptions.map((prescription) => (
-              <PrescriptionCard key={prescription.id} {...prescription} />
+            {prescriptions.map((prescription) => (
+              <PrescriptionCard
+                key={prescription.id}
+                id={prescription.id}
+                imageUrl={prescription.image_url}
+                status={prescription.status}
+                uploadDate={prescription.upload_date}
+                notes={prescription.notes}
+              />
             ))}
           </div>
         ) : (
