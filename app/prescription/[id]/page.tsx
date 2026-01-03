@@ -1,43 +1,12 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
-import { useAuth, ProtectedRoute } from '@/components/AuthProvider';
-import { showLoading, dismissToast, showError } from '@/utils/toast';
+import React from 'react';
+import { ProtectedRoute } from '@/components/AuthProvider';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Image as ImageIcon, CalendarDays, CheckCircle2, XCircle, Truck, Package, Search, MapPin, DollarSign } from 'lucide-react';
-
-interface Prescription {
-    id: string;
-    user_id: string;
-    image_url: string;
-    status: 'pending' | 'assigned' | 'picked_up' | 'delivered' | 'rejected' | 'awaiting_pharmacy_response' | 'pharmacy_confirmed';
-    upload_date: string;
-    notes?: string;
-    rider_id?: string;
-}
-
-interface Pharmacy {
-    id: string;
-    name: string;
-    address?: string;
-    latitude?: number;
-    longitude?: number;
-}
-
-interface PrescriptionPharmacyResponse {
-    id: string;
-    prescription_id: string;
-    pharmacy_id: string;
-    has_stock: boolean;
-    price?: number;
-    response_date: string;
-    notes?: string;
-    pharmacies: Pharmacy;
-}
+import { usePrescriptionDetailsLogic } from '@/hooks/use-prescription-details-logic';
 
 const statusColors: Record<string, string> = {
     pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
@@ -60,103 +29,13 @@ const statusIcons: Record<string, React.ReactNode> = {
 };
 
 export default function PrescriptionDetailsPage() {
-    const params = useParams();
-    const id = params.id as string;
-    const router = useRouter();
-    const { user, loading: authLoading } = useAuth();
-    const [prescription, setPrescription] = useState<Prescription | null>(null);
-    const [pharmacyResponses, setPharmacyResponses] = useState<PrescriptionPharmacyResponse[]>([]);
-    const [loading, setLoading] = useState(true);
-
-    const fetchPrescriptionDetails = useCallback(async () => {
-        if (!user || !id) {
-            setLoading(false);
-            return;
-        }
-
-        setLoading(true);
-        const toastId = showLoading('Fetching prescription details...');
-        try {
-            const { data: prescriptionData, error: prescriptionError } = await supabase
-                .from('prescriptions')
-                .select('*')
-                .eq('id', id)
-                .eq('user_id', user.id)
-                .single();
-
-            if (prescriptionError) throw prescriptionError;
-            setPrescription(prescriptionData as Prescription);
-
-            const { data: responsesData, error: responsesError } = await supabase
-                .from('prescription_pharmacy_responses')
-                .select(`
-          *,
-          pharmacies (
-            id,
-            name,
-            address,
-            latitude,
-            longitude
-          )
-        `)
-                .eq('prescription_id', id)
-                .eq('has_stock', true)
-                .order('response_date', { ascending: false });
-
-            if (responsesError) throw responsesError;
-            setPharmacyResponses(responsesData as unknown as PrescriptionPharmacyResponse[]);
-
-        } catch (error: any) {
-            showError(`Error fetching details: ${error.message}`);
-            setPrescription(null);
-            setPharmacyResponses([]);
-        } finally {
-            dismissToast(toastId);
-            setLoading(false);
-        }
-    }, [id, user]);
-
-    useEffect(() => {
-        if (!authLoading && user) {
-            fetchPrescriptionDetails();
-
-            const subscription = supabase
-                .channel(`prescription_details_${id}`)
-                .on(
-                    'postgres_changes',
-                    {
-                        event: '*',
-                        schema: 'public',
-                        table: 'prescriptions',
-                        filter: `id=eq.${id}`,
-                    },
-                    (payload) => {
-                        console.log('Prescription change received!', payload);
-                        fetchPrescriptionDetails();
-                    }
-                )
-                .on(
-                    'postgres_changes',
-                    {
-                        event: '*',
-                        schema: 'public',
-                        table: 'prescription_pharmacy_responses',
-                        filter: `prescription_id=eq.${id}`,
-                    },
-                    (payload) => {
-                        console.log('Pharmacy response change received!', payload);
-                        fetchPrescriptionDetails();
-                    }
-                )
-                .subscribe();
-
-            return () => {
-                supabase.removeChannel(subscription);
-            };
-        } else if (!authLoading && !user) {
-            router.push('/login');
-        }
-    }, [user, authLoading, id, router, fetchPrescriptionDetails]);
+    const {
+        prescription,
+        pharmacyResponses,
+        loading,
+        authLoading,
+        handleBack,
+    } = usePrescriptionDetailsLogic();
 
     if (loading || authLoading) {
         return <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">Loading details...</div>;
@@ -168,7 +47,7 @@ export default function PrescriptionDetailsPage() {
                 <Card className="w-full max-w-md p-6 text-center">
                     <CardTitle className="text-2xl font-bold mb-4">Prescription Not Found</CardTitle>
                     <CardDescription>The prescription you are looking for does not exist or you do not have access.</CardDescription>
-                    <Button onClick={() => router.push('/')} className="mt-6">
+                    <Button onClick={handleBack} className="mt-6">
                         <ArrowLeft className="h-4 w-4 mr-2" /> Back to Home
                     </Button>
                 </Card>
@@ -180,7 +59,7 @@ export default function PrescriptionDetailsPage() {
         <ProtectedRoute>
             <div className="min-h-screen flex flex-col items-center bg-gray-100 dark:bg-gray-900 p-4">
                 <div className="w-full max-w-2xl bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg mb-8 mt-8 relative">
-                    <Button variant="ghost" onClick={() => router.push('/')} className="absolute top-4 left-4">
+                    <Button variant="ghost" onClick={handleBack} className="absolute top-4 left-4">
                         <ArrowLeft className="h-4 w-4 mr-2" /> Back
                     </Button>
                     <CardHeader className="text-center">

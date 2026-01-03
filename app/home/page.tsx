@@ -1,116 +1,26 @@
 "use client";
 
 import { MadeWithDyad } from "@/components/made-with-dyad";
-import { useAuth, ProtectedRoute } from "@/components/AuthProvider";
+import { ProtectedRoute } from "@/components/AuthProvider";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/lib/supabase";
-import { showLoading, dismissToast, showError, showSuccess } from "@/utils/toast";
-import { useRouter } from "next/navigation";
 import PrescriptionCard from "@/components/PrescriptionCard";
-import React, { useEffect, useState, useCallback } from "react";
+import React from "react";
 import { ImageUploadDemo } from "@/components/ImageUploadDemo";
-
-interface Prescription {
-    id: string;
-    image_url: string;
-    status: 'pending' | 'assigned' | 'picked_up' | 'delivered' | 'rejected' | 'awaiting_pharmacy_response' | 'pharmacy_confirmed';
-    upload_date: string;
-    notes?: string;
-    rider_id?: string;
-}
+import { useHomeLogic } from "@/hooks/use-home-logic";
 
 export default function HomePage() {
-    const { user, profile, loading: authLoading } = useAuth();
-    const router = useRouter();
-    const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
-    const [fetchingPrescriptions, setFetchingPrescriptions] = useState(true);
-
-    const fetchPrescriptions = useCallback(async () => {
-        if (!user) {
-            setFetchingPrescriptions(false);
-            return;
-        }
-
-        setFetchingPrescriptions(true);
-        const toastId = showLoading('Fetching your prescriptions...');
-        try {
-            const { data, error } = await supabase
-                .from('prescriptions')
-                .select('*')
-                .eq('user_id', user.id)
-                .order('upload_date', { ascending: false });
-
-            if (error) throw error;
-
-            setPrescriptions(data as Prescription[]);
-            showSuccess('Prescriptions loaded!');
-        } catch (error: any) {
-            showError(`Error fetching prescriptions: ${error.message}`);
-            setPrescriptions([]);
-        } finally {
-            dismissToast(toastId);
-            setFetchingPrescriptions(false);
-        }
-    }, [user]);
-
-    useEffect(() => {
-        if (!authLoading && user) {
-            fetchPrescriptions();
-
-            const subscription = supabase
-                .channel('prescriptions_channel')
-                .on(
-                    'postgres_changes',
-                    {
-                        event: '*',
-                        schema: 'public',
-                        table: 'prescriptions',
-                        filter: `user_id=eq.${user.id}`,
-                    },
-                    (payload) => {
-                        console.log('Change received!', payload);
-                        fetchPrescriptions();
-                    }
-                )
-                .subscribe();
-
-            return () => {
-                supabase.removeChannel(subscription);
-            };
-        } else if (!authLoading && !user) {
-            setFetchingPrescriptions(false);
-        }
-    }, [user, authLoading, fetchPrescriptions]);
-
-    const handleLogout = async () => {
-        const toastId = showLoading('Logging out...');
-        try {
-            const { error } = await supabase.auth.signOut();
-            if (error) throw error;
-            showSuccess('Logged out successfully!');
-            router.push('/login');
-        } catch (error: any) {
-            showError(`Error logging out: ${error.message}`);
-        } finally {
-            dismissToast(toastId);
-        }
-    };
-
-    const handleUploadPrescription = () => {
-        router.push('/upload-prescription');
-    };
-
-    const handleGoToRiderDashboard = () => {
-        router.push('/rider-dashboard');
-    };
-
-    const handleGoToAdminDashboard = () => {
-        router.push('/admin-dashboard');
-    };
-
-    const handleViewPrescriptionDetails = (id: string) => {
-        router.push(`/prescription/${id}`);
-    };
+    const {
+        user,
+        profile,
+        authLoading,
+        prescriptions,
+        fetchingPrescriptions,
+        handleLogout,
+        handleUploadPrescription,
+        handleGoToRiderDashboard,
+        handleGoToAdminDashboard,
+        handleViewPrescriptionDetails,
+    } = useHomeLogic();
 
     if (authLoading || fetchingPrescriptions) {
         return <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">Loading data...</div>;
