@@ -1,98 +1,24 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from 'react';
-import { supabase } from '@/lib/supabase';
-import { showLoading, dismissToast, showError, showSuccess } from '@/utils/toast';
+import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Ban, CheckCircle2, Search, User } from 'lucide-react';
-import { useAuth } from '@/components/AuthProvider'; // Import useAuth to get current admin user
-
-interface UserProfile {
-  id: string;
-  email: string;
-  role: 'patient' | 'rider' | 'admin' | 'pharmacy' | 'doctor' | 'caregiver';
-  is_blocked: boolean;
-  created_at: string;
-}
+import { Ban, CheckCircle2, Search } from 'lucide-react';
+import { useUserManagementLogic } from '@/hooks/use-user-management-logic';
 
 const UserManagement: React.FC = () => {
-  const { user: adminUser } = useAuth(); // Get the currently logged-in admin user
-  const [users, setUsers] = useState<UserProfile[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterRole, setFilterRole] = useState<string>('all');
-
-  const fetchUsers = useCallback(async () => {
-    setLoading(true);
-    const toastId = showLoading('Fetching users...');
-    try {
-      let query = supabase
-        .from('profiles')
-        .select('id, email, role, is_blocked, created_at')
-        .order('created_at', { ascending: false });
-
-      if (filterRole !== 'all') {
-        query = query.eq('role', filterRole);
-      }
-
-      if (searchTerm) {
-        query = query.ilike('email', `%${searchTerm}%`);
-      }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-      setUsers(data as UserProfile[]);
-    } catch (error: any) {
-      showError(`Error fetching users: ${error.message}`);
-      setUsers([]);
-    } finally {
-      dismissToast(toastId);
-      setLoading(false);
-    }
-  }, [filterRole, searchTerm]);
-
-  useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
-
-  const handleToggleBlockUser = async (targetUser: UserProfile, currentBlockedStatus: boolean) => {
-    const action = currentBlockedStatus ? 'Unblocking' : 'Blocking';
-    const logAction = currentBlockedStatus ? 'USER_UNBLOCKED' : 'USER_BLOCKED';
-    const toastId = showLoading(`${action} user...`);
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ is_blocked: !currentBlockedStatus })
-        .eq('id', targetUser.id);
-
-      if (error) throw error;
-
-      // Log the action
-      await supabase.from('logs').insert({
-        user_id: adminUser?.id,
-        action: logAction,
-        target_id: targetUser.id,
-        description: `${adminUser?.email || 'Admin'} ${action.toLowerCase()} user ${targetUser.email}.`,
-        metadata: {
-          target_user_email: targetUser.email,
-          previous_status: currentBlockedStatus,
-          new_status: !currentBlockedStatus,
-        },
-      });
-
-      showSuccess(`User ${currentBlockedStatus ? 'unblocked' : 'blocked'} successfully!`);
-      fetchUsers(); // Re-fetch users to update the list
-    } catch (error: any) {
-      showError(`Error ${action.toLowerCase()} user: ${error.message}`);
-    } finally {
-      dismissToast(toastId);
-    }
-  };
+  const {
+    users,
+    loading,
+    searchTerm,
+    setSearchTerm,
+    filterRole,
+    setFilterRole,
+    handleToggleBlockUser,
+  } = useUserManagementLogic();
 
   return (
     <div className="space-y-6 p-6">

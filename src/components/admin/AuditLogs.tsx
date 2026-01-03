@@ -1,62 +1,21 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from 'react';
-import { supabase } from '@/lib/supabase';
-import { showLoading, dismissToast, showError } from '@/utils/toast';
+import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Clock } from 'lucide-react';
-
-interface LogEntry {
-  id: string;
-  timestamp: string;
-  user_id: string | null;
-  action: string;
-  target_id: string | null;
-  description: string | null;
-  metadata: Record<string, any> | null;
-}
+import { useAuditLogsLogic } from '@/hooks/use-audit-logs-logic';
 
 const AuditLogs: React.FC = () => {
-  const [logs, setLogs] = useState<LogEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterAction, setFilterAction] = useState<string>('all');
-
-  const fetchLogs = useCallback(async () => {
-    setLoading(true);
-    const toastId = showLoading('Fetching audit logs...');
-    try {
-      let query = supabase
-        .from('logs')
-        .select('*')
-        .order('timestamp', { ascending: false });
-
-      if (filterAction !== 'all') {
-        query = query.eq('action', filterAction);
-      }
-
-      if (searchTerm) {
-        query = query.ilike('description', `%${searchTerm}%`);
-      }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-      setLogs(data as LogEntry[]);
-    } catch (error: any) {
-      showError(`Error fetching logs: ${error.message}`);
-      setLogs([]);
-    } finally {
-      dismissToast(toastId);
-      setLoading(false);
-    }
-  }, [filterAction, searchTerm]);
-
-  useEffect(() => {
-    fetchLogs();
-  }, [fetchLogs]);
+  const {
+    logs,
+    loading,
+    searchTerm,
+    setSearchTerm,
+    filterAction,
+    setFilterAction,
+  } = useAuditLogsLogic();
 
   return (
     <div className="space-y-6 p-6">

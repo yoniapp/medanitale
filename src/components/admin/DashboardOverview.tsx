@@ -1,73 +1,13 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/lib/supabase';
-import { showLoading, dismissToast, showError } from '@/utils/toast';
 import { FileText, CheckCircle2, Users, Hospital } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useDashboardOverviewLogic } from '@/hooks/use-dashboard-overview-logic';
 
 const DashboardOverview: React.FC = () => {
-  const router = useRouter();
-  const [metrics, setMetrics] = useState({
-    totalPrescriptions: 0,
-    pendingPrescriptions: 0,
-    confirmedPrescriptions: 0,
-    registeredPharmacies: 0,
-    activeUsers: 0,
-  });
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchMetrics = async () => {
-      setLoading(true);
-      const toastId = showLoading('Fetching dashboard metrics...');
-      try {
-        const { count: totalPrescriptionsCount, error: totalError } = await supabase
-          .from('prescriptions')
-          .select('*', { count: 'exact', head: true });
-        if (totalError) throw totalError;
-
-        const { count: pendingPrescriptionsCount, error: pendingError } = await supabase
-          .from('prescriptions')
-          .select('*', { count: 'exact', head: true })
-          .eq('status', 'awaiting_pharmacy_response');
-        if (pendingError) throw pendingError;
-
-        const { count: confirmedPrescriptionsCount, error: confirmedError } = await supabase
-          .from('prescriptions')
-          .select('*', { count: 'exact', head: true })
-          .eq('status', 'pharmacy_confirmed');
-        if (confirmedError) throw confirmedError;
-
-        const { count: pharmaciesCount, error: pharmaciesError } = await supabase
-          .from('pharmacies')
-          .select('*', { count: 'exact', head: true });
-        if (pharmaciesError) throw pharmaciesError;
-
-        const { count: activeUsersCount, error: usersError } = await supabase
-          .from('profiles')
-          .select('*', { count: 'exact', head: true });
-        if (usersError) throw usersError;
-
-        setMetrics({
-          totalPrescriptions: totalPrescriptionsCount || 0,
-          pendingPrescriptions: pendingPrescriptionsCount || 0,
-          confirmedPrescriptions: confirmedPrescriptionsCount || 0,
-          registeredPharmacies: pharmaciesCount || 0,
-          activeUsers: activeUsersCount || 0,
-        });
-      } catch (error: any) {
-        showError(`Error fetching metrics: ${error.message}`);
-      } finally {
-        dismissToast(toastId);
-        setLoading(false);
-      }
-    };
-
-    fetchMetrics();
-  }, []);
+  const { metrics, loading, handleAction } = useDashboardOverviewLogic();
 
   return (
     <div className="space-y-6 p-6">
@@ -136,16 +76,16 @@ const DashboardOverview: React.FC = () => {
           <CardDescription>Perform common administrative tasks.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <Button variant="outline" onClick={() => router.push('/admin-dashboard?section=prescriptions&filter=pending')}>
+          <Button variant="outline" onClick={() => handleAction('/admin-dashboard?section=prescriptions&filter=pending')}>
             View Pending Prescriptions
           </Button>
-          <Button variant="outline" onClick={() => router.push('/admin-dashboard?section=prescriptions&filter=pharmacy_confirmed')}>
+          <Button variant="outline" onClick={() => handleAction('/admin-dashboard?section=prescriptions&filter=pharmacy_confirmed')}>
             View Confirmed Prescriptions
           </Button>
-          <Button variant="outline" onClick={() => router.push('/admin-dashboard?section=users')}>
+          <Button variant="outline" onClick={() => handleAction('/admin-dashboard?section=users')}>
             Manage Users
           </Button>
-          <Button variant="outline" onClick={() => router.push('/admin-dashboard?section=pharmacies')}>
+          <Button variant="outline" onClick={() => handleAction('/admin-dashboard?section=pharmacies')}>
             Manage Pharmacies
           </Button>
         </CardContent>
