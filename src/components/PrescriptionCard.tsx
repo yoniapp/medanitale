@@ -3,26 +3,28 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Image as ImageIcon, CalendarDays, CheckCircle2, XCircle } from 'lucide-react';
+import { Image as ImageIcon, CalendarDays, CheckCircle2, XCircle, Truck, Package } from 'lucide-react'; // Added Truck and Package icons
 
 interface PrescriptionCardProps {
   id: string;
   imageUrl: string;
-  status: 'pending' | 'processing' | 'delivered' | 'rejected';
+  status: 'pending' | 'assigned' | 'picked_up' | 'delivered' | 'rejected'; // Updated status types
   uploadDate: string;
   notes?: string;
 }
 
 const statusColors = {
   pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-  processing: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+  assigned: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200', // New status color
+  picked_up: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200', // New status color
   delivered: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
   rejected: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
 };
 
 const statusIcons = {
   pending: <CalendarDays className="h-4 w-4 mr-1" />,
-  processing: <ImageIcon className="h-4 w-4 mr-1" />, // Using image icon as a placeholder for processing
+  assigned: <Truck className="h-4 w-4 mr-1" />, // Icon for assigned
+  picked_up: <Package className="h-4 w-4 mr-1" />, // Icon for picked up
   delivered: <CheckCircle2 className="h-4 w-4 mr-1" />,
   rejected: <XCircle className="h-4 w-4 mr-1" />,
 };
@@ -47,7 +49,7 @@ const PrescriptionCard: React.FC<PrescriptionCardProps> = ({
           <CardTitle className="text-lg font-semibold">Prescription</CardTitle>
           <Badge className={`${statusColors[status]} flex items-center`}>
             {statusIcons[status]}
-            {status.charAt(0).toUpperCase() + status.slice(1)}
+            {status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' ')}
           </Badge>
         </div>
         <CardDescription className="flex items-center text-sm text-gray-500 dark:text-gray-400">

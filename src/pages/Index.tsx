@@ -11,9 +11,10 @@ import React, { useEffect, useState, useCallback } from "react"; // Import useCa
 interface Prescription {
   id: string;
   image_url: string;
-  status: 'pending' | 'processing' | 'delivered' | 'rejected';
+  status: 'pending' | 'assigned' | 'picked_up' | 'delivered' | 'rejected'; // Updated status types
   upload_date: string;
   notes?: string;
+  rider_id?: string; // Added rider_id
 }
 
 const Index = () => {
@@ -102,6 +103,10 @@ const Index = () => {
     navigate('/upload-prescription');
   };
 
+  const handleGoToRiderDashboard = () => {
+    navigate('/rider-dashboard');
+  };
+
   if (authLoading || fetchingPrescriptions) {
     return <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">Loading data...</div>;
   }
@@ -128,6 +133,9 @@ const Index = () => {
         <div className="flex flex-col space-y-4 mt-4">
           <Button onClick={handleUploadPrescription}>
             Upload New Prescription
+          </Button>
+          <Button onClick={handleGoToRiderDashboard} variant="secondary">
+            Go to Rider Dashboard
           </Button>
           <Button onClick={handleLogout} variant="outline">
             Logout

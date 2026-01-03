@@ -6,7 +6,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import LoginPage from "./pages/LoginPage";
-import UploadPrescriptionPage from "./pages/UploadPrescriptionPage"; // Import the new page
+import UploadPrescriptionPage from "./pages/UploadPrescriptionPage";
+import RiderDashboardPage from "./pages/RiderDashboardPage"; // Import the new page
 import { AuthProvider, ProtectedRoute } from "./components/AuthProvider";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <UploadPrescriptionPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/rider-dashboard"
+              element={
+                <ProtectedRoute>
+                  <RiderDashboardPage />
                 </ProtectedRoute>
               }
             />
