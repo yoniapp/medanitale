@@ -60,7 +60,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           router.push('/login');
         } else if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
           if (currentSession && pathname === '/login') {
-            router.push('/home');
+            // Redirect based on user role
+            const userProfile = await fetchProfile(currentSession.user.id);
+            if (userProfile) {
+              switch (userProfile.role) {
+                case 'admin':
+                  router.push('/admin-dashboard');
+                  break;
+                case 'pharmacy':
+                  router.push('/pharmacy');
+                  break;
+                case 'rider':
+                  router.push('/rider-dashboard');
+                  break;
+                default:
+                  router.push('/home');
+              }
+            } else {
+              router.push('/home');
+            }
           }
         }
       }
@@ -81,7 +99,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (!session && pathname !== '/login' && pathname !== '/') {
         router.push('/login');
       } else if (session && pathname === '/login') {
-        router.push('/home');
+        // Redirect based on user role
+        const userProfile = await fetchProfile(session.user.id);
+        if (userProfile) {
+          switch (userProfile.role) {
+            case 'admin':
+              router.push('/admin-dashboard');
+              break;
+            case 'pharmacy':
+              router.push('/pharmacy');
+              break;
+            case 'rider':
+              router.push('/rider-dashboard');
+              break;
+            default:
+              router.push('/home');
+          }
+        } else {
+          router.push('/home');
+        }
       }
     });
 
