@@ -96,6 +96,10 @@ export const useHomeLogic = () => {
         router.push('/upload-prescription');
     };
 
+    const handleSearchMedicine = () => {
+        router.push('/search');
+    };
+
     const handleGoToRiderDashboard = () => {
         router.push('/rider-dashboard');
     };
@@ -116,6 +120,7 @@ export const useHomeLogic = () => {
         fetchingPrescriptions,
         handleLogout,
         handleUploadPrescription,
+        handleSearchMedicine,
         handleGoToRiderDashboard,
         handleGoToAdminDashboard,
         handleViewPrescriptionDetails,

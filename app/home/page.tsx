@@ -17,6 +17,7 @@ export default function HomePage() {
         fetchingPrescriptions,
         handleLogout,
         handleUploadPrescription,
+        handleSearchMedicine,
         handleGoToRiderDashboard,
         handleGoToAdminDashboard,
         handleViewPrescriptionDetails,
@@ -52,10 +53,13 @@ export default function HomePage() {
                         </div>
                     )}
                     <div className="flex flex-col space-y-4 mt-4">
-                        <Button onClick={handleUploadPrescription}>
-                            Upload New Prescription
+                        <Button onClick={handleUploadPrescription} className="h-12 text-lg">
+                            Upload Prescription
                         </Button>
-                        <Button onClick={handleGoToRiderDashboard} variant="secondary">
+                        <Button onClick={handleSearchMedicine} variant="outline" className="h-12 text-lg">
+                            Search Medicine
+                        </Button>
+                        <Button onClick={handleGoToRiderDashboard} variant="secondary" className="h-12">
                             Go to Rider Dashboard
                         </Button>
                         {profile?.role === 'admin' && (
