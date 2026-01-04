@@ -4251,6 +4251,11 @@ video {
   pointer-events: none;
 }
 
+.\[\&_svg\]\:size-4 svg {
+  width: 1rem;
+  height: 1rem;
+}
+
 .\[\&_svg\]\:shrink-0 svg {
   flex-shrink: 0;
 }
